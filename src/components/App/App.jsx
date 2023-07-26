@@ -1,40 +1,43 @@
-import { nanoid } from 'nanoid';
 import ContactForm from '../ContactForm/ContactForm';
 import ContactList from '../ContactList/ContactList';
 import Filter from '../Filter/Filter';
 import CanvasAnimation from '../CanvasAnimation/CanvasAnimation';
 import { useEffect, useState } from 'react';
-
+import { addContact, deleteContact } from 'Redux/Slices';
 import { Container, Wrapper, Title, SubTitle } from './App.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContact } from '../../Redux/selectors';
 
 const App = () => {
-  const [contacts, setContacts] = useState([]);
+  const contact = useSelector(getContact) || [];
   const [filter, setFilter] = useState('');
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const storedContacts = localStorage.getItem('contacts');
 
     if (storedContacts) {
-      setContacts(JSON.parse(storedContacts));
+      // Set the state directly with the data obtained from localStorage
+      dispatch(addContact(JSON.parse(storedContacts)));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
+    localStorage.setItem('contacts', JSON.stringify(contact));
+  }, [contact]);
 
-  const addContact = contact => {
-    const isContactInList = contacts.some(
-      ({ name }) => name.toLowerCase() === contact.name.toLowerCase()
+  const addNewContact = newContact => {
+    const isContactInList = contact.some(
+      ({ name }) => name.toLowerCase() === newContact.name.toLowerCase()
     );
+
     if (isContactInList) {
-      alert(`${contact.name} already exists in contacts`);
+      alert(`${newContact.name} already exists in contacts`);
       return;
     }
-    setContacts(prevContacts => [
-      { id: nanoid(), ...contact },
-      ...prevContacts,
-    ]);
+
+    // If the contact doesn't exist, dispatch the addContact action
+    dispatch(addContact(newContact.name, newContact.number));
   };
 
   const changeFilter = e => {
@@ -44,7 +47,7 @@ const App = () => {
   const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
 
-    return contacts.filter(contact =>
+    return contact.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
@@ -52,9 +55,7 @@ const App = () => {
   const visibleContacts = getVisibleContacts();
 
   const removeContact = contactId => {
-    setContacts(prevContacts =>
-      prevContacts.filter(({ id }) => id !== contactId)
-    );
+    dispatch(deleteContact(contactId));
   };
 
   return (
@@ -62,15 +63,15 @@ const App = () => {
       <CanvasAnimation />
       <Title>Phone Book</Title>
 
-      <ContactForm onSubmit={addContact} />
+      <ContactForm onSubmit={addNewContact} />
 
       <SubTitle>Contacts</SubTitle>
-      {contacts.length > 0 ? (
+      {contact.length > 0 ? (
         <Filter value={filter} onChangeFilter={changeFilter} />
       ) : (
         <Wrapper>Your phone book is empty. Add the first contact!</Wrapper>
       )}
-      {contacts.length > 0 && (
+      {contact.length > 0 && (
         <ContactList
           contacts={visibleContacts}
           onRemoveContact={removeContact}

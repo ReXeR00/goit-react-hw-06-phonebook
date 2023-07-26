@@ -1,3 +1,3 @@
 export const getContact = state => state.contact;
 
-export const getStatusSearch = state => state.search.status;
+export const getValueSearch = state => state.searchInitialState;
