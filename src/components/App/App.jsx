@@ -2,33 +2,21 @@ import ContactForm from '../ContactForm/ContactForm';
 import ContactList from '../ContactList/ContactList';
 import Filter from '../Filter/Filter';
 import CanvasAnimation from '../CanvasAnimation/CanvasAnimation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { addContact, deleteContact } from 'Redux/Slices';
 import { Container, Wrapper, Title, SubTitle } from './App.styled';
 import { useDispatch, useSelector } from 'react-redux';
 import { getContact } from '../../Redux/selectors';
-
+import { useMemo } from 'react';
 const App = () => {
   const contact = useSelector(getContact) || [];
   const [filter, setFilter] = useState('');
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const storedContacts = localStorage.getItem('contacts');
-
-    if (storedContacts) {
-      // Set the state directly with the data obtained from localStorage
-      dispatch(addContact(JSON.parse(storedContacts)));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contact));
-  }, [contact]);
-
   const addNewContact = newContact => {
     const isContactInList = contact.some(
-      ({ name }) => name.toLowerCase() === newContact.name.toLowerCase()
+      ({ name }) =>
+        name.trim().toLowerCase() === newContact.name.trim().toLowerCase()
     );
 
     if (isContactInList) {
@@ -36,7 +24,6 @@ const App = () => {
       return;
     }
 
-    // If the contact doesn't exist, dispatch the addContact action
     dispatch(addContact(newContact.name, newContact.number));
   };
 
@@ -47,12 +34,21 @@ const App = () => {
   const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
 
-    return contact.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
+    return contact.filter(
+      contact =>
+        typeof contact.name === 'string' &&
+        contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
 
-  const visibleContacts = getVisibleContacts();
+  // return contact.filter(contact =>
+  //   contact.name.toLowerCase().includes(normalizedFilter)
+  // );
+
+  const visibleContacts = useMemo(() => getVisibleContacts(), [
+    filter,
+    contact,
+  ]);
 
   const removeContact = contactId => {
     dispatch(deleteContact(contactId));
