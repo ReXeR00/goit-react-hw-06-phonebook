@@ -1,10 +1,7 @@
 import PropTypes from 'prop-types';
 import { List, Item, Button } from './ContactList.styled';
-import { useSelector } from 'react-redux';
-import { getContact } from '../../Redux/selectors';
 
-const ContactList = ({ onRemoveContact }) => {
-  const contacts = useSelector(getContact);
+const ContactList = ({ contacts, onRemoveContact }) => {
   return (
     <List>
       {contacts.map(contact => (

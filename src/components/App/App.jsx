@@ -7,7 +7,6 @@ import { addContact, deleteContact } from 'Redux/Slices';
 import { Container, Wrapper, Title, SubTitle } from './App.styled';
 import { useDispatch, useSelector } from 'react-redux';
 import { getContact } from '../../Redux/selectors';
-import { useMemo } from 'react';
 const App = () => {
   const contact = useSelector(getContact) || [];
   const [filter, setFilter] = useState('');
@@ -34,21 +33,16 @@ const App = () => {
   const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
 
-    return contact.filter(
-      contact =>
-        typeof contact.name === 'string' &&
-        contact.name.toLowerCase().includes(normalizedFilter)
-    );
+    return contact.filter(con => {
+      const contactName = con.name.toLowerCase();
+
+      return contactName.includes(normalizedFilter);
+    });
   };
 
   // return contact.filter(contact =>
   //   contact.name.toLowerCase().includes(normalizedFilter)
   // );
-
-  const visibleContacts = useMemo(() => getVisibleContacts(), [
-    filter,
-    contact,
-  ]);
 
   const removeContact = contactId => {
     dispatch(deleteContact(contactId));
@@ -69,7 +63,7 @@ const App = () => {
       )}
       {contact.length > 0 && (
         <ContactList
-          contacts={visibleContacts}
+          contacts={getVisibleContacts()}
           onRemoveContact={removeContact}
         />
       )}
