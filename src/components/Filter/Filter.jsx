@@ -6,7 +6,12 @@ const Filter = ({ value, onChangeFilter }) => {
     <Margin>
       <Label>
         Find contacts by name
-        <Input type="text" value={value} onChange={onChangeFilter} />
+        <Input
+          type="text"
+          pattern="^[A-Za-z.'\- ]+$"
+          value={value}
+          onChange={onChangeFilter}
+        />
       </Label>
     </Margin>
   );
